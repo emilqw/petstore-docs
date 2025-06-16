@@ -1,0 +1,159 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: Swagger Petstore API
+  description: Это пример сервера магазина питомцев, основанный на спецификации OpenAPI 3.0
+  license:
+    name: MIT
+servers:
+  - url: http://petstore.swagger.io/v1
+    description: Продакшн сервер
+  - url: http://test.petstore.swagger.io/v1
+    description: Тестовая среда
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /pets:
+    get:
+      summary: Получить список всех питомцев
+      description: Возвращает список всех питомцев с возможностью ограничения количества результатов
+      operationId: listPets
+      tags:
+        - pets
+      parameters:
+        - name: limit
+          in: query
+          description: Максимальное количество питомцев для возврата
+          required: false
+          schema:
+            type: integer
+            maximum: 100
+            format: int32
+            default: 20
+      responses:
+        '200':
+          description: Список питомцев успешно получен
+          headers:
+            x-next:
+              description: Ссылка на следующую страницу результатов
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pets'
+        default:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      summary: Создать нового питомца
+      description: Добавляет нового питомца в магазин
+      operationId: createPets
+      tags:
+        - pets
+      requestBody:
+        description: Данные питомца для создания
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Pet'
+        required: true
+      responses:
+        '201':
+          description: Питомец успешно создан
+        default:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /pets/{petId}:
+    get:
+      summary: Получить питомца по ID
+      description: Возвращает информацию о конкретном питомце по его уникальному идентификатору
+      operationId: showPetById
+      tags:
+        - pets
+      parameters:
+        - name: petId
+          in: path
+          required: true
+          description: Уникальный идентификатор питомца
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Информация о питомце
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pet'
+        '400':
+          description: Неверный формат ID питомца
+        '404':
+          description: Питомец не найден
+        default:
+          description: Неожиданная ошибка
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API ключ для авторизации запросов
+  
+  schemas:
+    Pet:
+      type: object
+      description: Объект питомца в магазине
+      required:
+        - id
+        - name
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Уникальный идентификатор питомца
+          example: 12345
+        name:
+          type: string
+          description: Имя питомца
+          example: "Барсик"
+        tag:
+          type: string
+          description: Дополнительный тег или категория питомца
+          example: "кот"
+    
+    Pets:
+      type: array
+      description: Массив питомцев
+      maxItems: 100
+      items:
+        $ref: '#/components/schemas/Pet'
+    
+    Error:
+      type: object
+      description: Объект ошибки
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: Код ошибки
+          example: 400
+        message:
+          type: string
+          description: Описание ошибки
+          example: "Неверный запрос"

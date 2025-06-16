@@ -1,0 +1,12 @@
+title: Документация API магазина питомцев
+href: index.md
+items:
+  - name: Введение
+    href: index.md
+  - name: Swagger Petstore API
+    include:
+      path: openapi
+      includers:
+        - name: openapi
+          input: ./openapi/petstore-api-final.yaml
+          mode: link
